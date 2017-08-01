@@ -1,0 +1,93 @@
+#include <iostream>
+#include <queue>
+#include <vector>
+
+#include "hashfunc.h"
+#include "Graph.h"
+#include "HashTable.h"
+
+using namespace std;
+
+Graph::Graph()
+{
+	//ajlist = NULL;
+}
+
+Graph::~Graph()
+{
+	//delete[] ajlist;
+}
+
+void Graph::createEdge(string name1, HashTable &t, HashTable &r, vector<string> &data)
+{
+	queue<string> n;
+	Node *ta = NULL;//delete at the end of the func?
+	Node *roster = NULL;
+	set<string>::iterator a,b;
+	
+	n.push(name1);
+	cout<<"outside while back "<<n.back()<<endl;
+	while(!n.empty()){
+		if(check_exist(data,n.front())){//check if the student's taed any course
+			ta = t.get_node(hash_string(n.front())%TSIZE);
+			while(ta->key != n.front()){
+				ta = ta->next;
+			}//traverse to the ta we looking for
+			for(a=ta->value.begin();a!=ta->value.end();a++){//loop thru list of courses
+				roster = r.get_node(hash_string(*a)%TSIZE);//get to the bucket that stores the course we looking for
+				while(roster->key != *a){
+					roster = roster->next;
+				}//taverse to the roster we looking for
+				int i=0;
+				for(b=roster->value.begin();b!=roster->value.end();b++){//loop thru the each student in the roster
+					if(i==0){
+						adj temp;
+						temp.ta = n.front();
+						temp.course = *a;
+						ajlist.push_back(temp);
+						ajlist.back().stu.push_back(*b);
+						cout<<"before push back "<<n.back()<<endl;
+						n.push(*b);
+						cout<<"after push back "<<n.back()<<endl;
+						cout<<temp.ta<<" "<<temp.course<<" "<<*b<<endl;
+						i++;
+					}
+					else if(i!=0){
+						ajlist.back().stu.push_back(*b);
+						cout<<"before push2 back "<<n.back()<<endl;
+						n.push(*b);
+						cout<<"after push2 back "<<n.back()<<endl;
+						cout<<" "<<*b<<endl;
+					}
+				}
+			}
+			n.pop();
+		}
+		else if(!check_exist(data,n.front())){//if the student had not taed any course, just pop
+			n.pop();
+		}
+	}
+
+}
+
+/*void Graph::print_ajlist()
+{
+	set<string>::iterator j;
+	for(int i = 0; i < (int)ajlist.size(); i++){
+		cout<<ajlist.at(i).ta<<ajlist.at(i).course<<" ";
+		for(j=ajlist.at(i).stu.begin();j!=ajlist.at(i).stu.end();j++){
+			cout<<(*j)<<" ";
+		}
+		cout<<endl;
+	}
+}*/
+bool Graph::check_exist(vector<string> &data, string n)
+{
+	int size = static_cast<int>(data.size());
+	for(int i = 0; i < size; i++){
+		if(data.at(i) == n){
+			return true;
+		}
+	}
+	return false;
+}
